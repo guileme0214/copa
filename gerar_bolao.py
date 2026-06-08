@@ -19,59 +19,68 @@ from openpyxl.utils import get_column_letter
 
 ANO = "2026"
 
-# --- Times: nome em português -> bandeira (emoji) ---------------------------
-# Escócia e Inglaterra usam emoji de subdivisão (🏴 + tag sequence); podem não
-# renderizar em alguns aparelhos/sistemas mais antigos.
-BANDEIRAS = {
-    "México": "🇲🇽",
-    "África do Sul": "🇿🇦",
-    "Coreia do Sul": "🇰🇷",
-    "Rep. Tcheca": "🇨🇿",
-    "Canadá": "🇨🇦",
-    "Bósnia e Herzegovina": "🇧🇦",
-    "Catar": "🇶🇦",
-    "Suíça": "🇨🇭",
-    "Brasil": "🇧🇷",
-    "Marrocos": "🇲🇦",
-    "Haiti": "🇭🇹",
-    "Escócia": "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
-    "Estados Unidos": "🇺🇸",
-    "Paraguai": "🇵🇾",
-    "Austrália": "🇦🇺",
-    "Turquia": "🇹🇷",
-    "Alemanha": "🇩🇪",
-    "Curaçao": "🇨🇼",
-    "Costa do Marfim": "🇨🇮",
-    "Equador": "🇪🇨",
-    "Países Baixos": "🇳🇱",
-    "Japão": "🇯🇵",
-    "Suécia": "🇸🇪",
-    "Tunísia": "🇹🇳",
-    "Bélgica": "🇧🇪",
-    "Egito": "🇪🇬",
-    "Irã": "🇮🇷",
-    "Nova Zelândia": "🇳🇿",
-    "Espanha": "🇪🇸",
-    "Cabo Verde": "🇨🇻",
-    "Arábia Saudita": "🇸🇦",
-    "Uruguai": "🇺🇾",
-    "França": "🇫🇷",
-    "Senegal": "🇸🇳",
-    "Iraque": "🇮🇶",
-    "Noruega": "🇳🇴",
-    "Argentina": "🇦🇷",
-    "Argélia": "🇩🇿",
-    "Áustria": "🇦🇹",
-    "Jordânia": "🇯🇴",
-    "Portugal": "🇵🇹",
-    "RD Congo": "🇨🇩",
-    "Uzbequistão": "🇺🇿",
-    "Colômbia": "🇨🇴",
-    "Inglaterra": "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
-    "Croácia": "🇭🇷",
-    "Gana": "🇬🇭",
-    "Panamá": "🇵🇦",
+# --- Times: nome em português -> código de bandeira (ISO, usado no flagcdn) --
+# As bandeiras são exibidas como IMAGEM real (função =IMAGE do Google Sheets),
+# e não como emoji — assim aparecem em qualquer sistema, sem virar a sigla de
+# 2 letras. Escócia/Inglaterra usam os códigos de subdivisão gb-sct / gb-eng.
+CODIGO_BANDEIRA = {
+    "México": "mx",
+    "África do Sul": "za",
+    "Coreia do Sul": "kr",
+    "Rep. Tcheca": "cz",
+    "Canadá": "ca",
+    "Bósnia e Herzegovina": "ba",
+    "Catar": "qa",
+    "Suíça": "ch",
+    "Brasil": "br",
+    "Marrocos": "ma",
+    "Haiti": "ht",
+    "Escócia": "gb-sct",
+    "Estados Unidos": "us",
+    "Paraguai": "py",
+    "Austrália": "au",
+    "Turquia": "tr",
+    "Alemanha": "de",
+    "Curaçao": "cw",
+    "Costa do Marfim": "ci",
+    "Equador": "ec",
+    "Países Baixos": "nl",
+    "Japão": "jp",
+    "Suécia": "se",
+    "Tunísia": "tn",
+    "Bélgica": "be",
+    "Egito": "eg",
+    "Irã": "ir",
+    "Nova Zelândia": "nz",
+    "Espanha": "es",
+    "Cabo Verde": "cv",
+    "Arábia Saudita": "sa",
+    "Uruguai": "uy",
+    "França": "fr",
+    "Senegal": "sn",
+    "Iraque": "iq",
+    "Noruega": "no",
+    "Argentina": "ar",
+    "Argélia": "dz",
+    "Áustria": "at",
+    "Jordânia": "jo",
+    "Portugal": "pt",
+    "RD Congo": "cd",
+    "Uzbequistão": "uz",
+    "Colômbia": "co",
+    "Inglaterra": "gb-eng",
+    "Croácia": "hr",
+    "Gana": "gh",
+    "Panamá": "pa",
 }
+
+# URL das imagens de bandeira (w80 = 80px de largura, redimensionada na célula).
+FLAG_URL = "https://flagcdn.com/w80/{code}.png"
+
+
+def bandeira(time):
+    """Fórmula =IMAGE(...) que exibe a bandeira real do time no Google Sheets."""
+    return f'=IMAGE("{FLAG_URL.format(code=CODIGO_BANDEIRA[time])}")'
 
 # --- Os 72 jogos da fase de grupos: (dia/mês, grupo, Time 1, Time 2) ---------
 # Fonte: ESPN / Wikipedia (sorteio de 05/12/2025). Ordem cronológica.
@@ -181,7 +190,7 @@ def checar_integridade():
         for t in (t1, t2):
             aparicoes[t] = aparicoes.get(t, 0) + 1
             grupo_do_time.setdefault(t, set()).add(grupo)
-            assert t in BANDEIRAS, f"Sem bandeira para: {t}"
+            assert t in CODIGO_BANDEIRA, f"Sem bandeira para: {t}"
 
     grupos = sorted(por_grupo)
     assert grupos == list("ABCDEFGHIJKL"), f"Grupos inesperados: {grupos}"
@@ -255,15 +264,15 @@ def gerar_planilha(caminho="bolao_copa_2026.xlsx"):
         fill = fill_impar if listrado else fill_par
 
         valores = [
-            f"{data}/{ANO}", grupo, t1, BANDEIRAS[t1],
-            "", "", "", "", BANDEIRAS[t2], t2,
+            f"{data}/{ANO}", grupo, t1, bandeira(t1),
+            "", "", "", "", bandeira(t2), t2,
         ]
         for i, v in enumerate(valores, start=1):
             cel = ws.cell(row=linha, column=i, value=v)
             cel.fill = fill
             cel.border = borda
             cel.alignment = centro if i in cols_centro else esq
-        ws.row_dimensions[linha].height = 20
+        ws.row_dimensions[linha].height = 30
         linha += 1
 
     # Congelar título+cabeçalho e ligar o filtro no cabeçalho

@@ -32,11 +32,15 @@ São os **72 jogos da fase de grupos** em ordem de data, um por linha. Para cada
 Pronto — é só preencher os palpites. Para um bolão com várias pessoas, duplique a aba "Fase de Grupos" (botão direito na aba → *Duplicar*) e renomeie com o nome de cada participante.
 
 ## Observação sobre as bandeiras
-As bandeiras são **emoji** (🇧🇷, 🇦🇷, ...), que aparecem na maioria dos aparelhos. As de **Escócia** (🏴󠁧󠁢󠁳󠁣󠁴󠁿) e **Inglaterra** (🏴󠁧󠁢󠁥󠁮󠁧󠁿) usam um emoji especial que pode não renderizar em alguns sistemas mais antigos — nesse caso aparece um quadrado/preto, mas o nome do país ao lado continua correto.
+As bandeiras são **imagens reais**, carregadas pela função `=IMAGE("https://flagcdn.com/...")` do Google Sheets (não são emoji — o emoji acabava virando a sigla de 2 letras em muitos sistemas, como o Windows). Por isso:
+
+- As bandeiras só aparecem depois de **importar/converter o arquivo para Google Sheets** (passo acima). Se você só abrir o `.xlsx` no modo Office, a fórmula pode não renderizar.
+- É preciso **internet** para as imagens carregarem (elas vêm do site flagcdn.com).
+- Para tirar as bandeiras, basta limpar as colunas "Bandeira" — o nome do país continua na coluna ao lado.
 
 ## Regerar a planilha
 ```bash
 pip install openpyxl
 python3 gerar_bolao.py
 ```
-Os jogos ficam na lista `JOGOS` dentro de `gerar_bolao.py` (fonte: sorteio de 05/12/2025, confirmado por ESPN/Wikipedia). Os nomes dos times estão em português e podem ser ajustados ali (ex.: trocar "Países Baixos" por "Holanda").
+Os jogos ficam na lista `JOGOS` dentro de `gerar_bolao.py` (fonte: sorteio de 05/12/2025, confirmado por ESPN/Wikipedia). Os nomes dos times estão em português e podem ser ajustados ali (ex.: trocar "Países Baixos" por "Holanda"). As bandeiras vêm do dicionário `CODIGO_BANDEIRA` (código de país de 2 letras do flagcdn).
